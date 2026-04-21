@@ -38,13 +38,19 @@ jobs:
 
       - name: Login to Yandex Container Registry
         run: |
-          IAM_TOKEN=$(curl -s -X POST \
+          IAM_TOKEN=$(curl -sf -X POST \
             -H "Content-Type: application/json" \
-            -d '{"yandexPassportOauthToken": "${{ secrets.YC_OAUTH_TOKEN }}"}' \
+            -d "{\"yandexPassportOauthToken\": \"$YC_OAUTH_TOKEN\"}" \
             https://iam.api.cloud.yandex.net/iam/v1/tokens | jq -r '.iamToken')
+          if [ -z "$IAM_TOKEN" ] || [ "$IAM_TOKEN" = "null" ]; then
+            echo "Failed to get IAM token"
+            exit 1
+          fi
           echo "${IAM_TOKEN}" | docker login cr.yandex \
             --username iam \
             --password-stdin
+        env:
+          YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
 
       - name: Build Docker image
         run: |
@@ -80,9 +86,9 @@ jobs:
 
       - name: Get fresh IAM token for registry
         run: |
-          IAM_TOKEN=$(curl -s -X POST \
+          IAM_TOKEN=$(curl -sf -X POST \
             -H "Content-Type: application/json" \
-            -d '{"yandexPassportOauthToken": "${{ secrets.YC_OAUTH_TOKEN }}"}' \
+            -d "{\"yandexPassportOauthToken\": \"$YC_OAUTH_TOKEN\"}" \
             https://iam.api.cloud.yandex.net/iam/v1/tokens | jq -r '.iamToken')
           kubectl create secret docker-registry yc-registry \
             --namespace=app \
@@ -90,6 +96,8 @@ jobs:
             --docker-username=iam \
             --docker-password="${IAM_TOKEN}" \
             --dry-run=client -o yaml | kubectl apply -f -
+        env:
+          YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
 
       - name: Deploy new image
         run: |
