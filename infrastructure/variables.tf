@@ -38,7 +38,7 @@ variable "aws_secret_key" {
 # ──────────────────────────────────────────────
 
 variable "project_name" {
-  description = "Name project"
+  description = "Name project cloud"
   type        = string
   default     = "k8s-project"
 }
