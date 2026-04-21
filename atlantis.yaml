@@ -3,7 +3,7 @@ projects:
 - name: bootstrap
   dir: bootstrap
   workspace: default
-  terraform_version: v1.0
+  terraform_version: v1.14.8
   autoplan:
     when_modified:
       - "*.tf"
@@ -13,7 +13,7 @@ projects:
 - name: infrastructure
   dir: infrastructure
   workspace: default
-  terraform_version: v1.0
+  terraform_version: v1.14.8
   autoplan:
     when_modified:
       - "*.tf"
