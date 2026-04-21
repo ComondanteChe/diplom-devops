@@ -1,0 +1,21 @@
+version: 3
+projects:
+- name: bootstrap
+  dir: bootstrap
+  workspace: default
+  terraform_version: v1.0
+  autoplan:
+    when_modified:
+      - "*.tf"
+      - "*.tfvars"
+    enabled: true
+
+- name: infrastructure
+  dir: infrastructure
+  workspace: default
+  terraform_version: v1.0
+  autoplan:
+    when_modified:
+      - "*.tf"
+      - "*.tfvars"
+    enabled: true

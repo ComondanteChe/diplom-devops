@@ -1,0 +1,229 @@
+fullnameOverride: "kube-prometheus"
+
+# ============================================
+# Prometheus
+# ============================================
+prometheus:
+  enabled: true
+  
+  prometheusSpec:
+    retention: 1d
+    retentionSize: "2GB"
+    externalUrl: "http://111.88.240.142.nip.io:32080/prometheus"
+    routePrefix: "/prometheus"
+    
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+          
+    additionalScrapeConfigs: []
+
+  service:
+    type: NodePort
+    nodePort: 30900
+    
+  ingress:
+    enabled: false
+
+# ============================================
+# Alertmanager
+# ============================================
+alertmanager:
+  enabled: true
+  
+  alertmanagerSpec:
+    externalUrl: "http://111.88.240.142.nip.io:32080/alertmanager"
+    routePrefix: "/alertmanager"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+  
+  service:
+    type: NodePort
+    nodePort: 30930
+  
+  config:
+    global:
+      resolve_timeout: 5m
+    
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'default'
+      routes:
+      - match:
+          alertname: Watchdog
+        receiver: 'null'
+    
+    receivers:
+    - name: 'null'
+    - name: 'default'
+
+# ============================================
+# Grafana
+# ============================================
+grafana:
+  enabled: true
+
+  initChownData:
+    enabled: false
+
+  adminPassword: "admin"
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  persistence:
+    enabled: true
+    size: 10Gi
+  
+  service:
+    type: NodePort
+    nodePort: 30300
+  
+  additionalDataSources: []
+  
+  sidecar:
+    dashboards:
+      enabled: true
+
+  grafana.ini:
+    server:
+      root_url: "http://111.88.240.142.nip.io:32080/grafana"
+      serve_from_sub_path: true
+    analytics:
+      check_for_updates: false
+    users:
+      auto_assign_org_role: Viewer
+
+# ============================================
+# Node Exporter
+# ============================================
+nodeExporter:
+  enabled: true
+  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# ============================================
+# Kube State Metrics
+# ============================================
+kube-state-metrics:
+  enabled: true
+  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# ============================================
+# Prometheus Operator
+# ============================================
+prometheusOperator:
+  enabled: true
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ============================================
+blackboxExporter:
+  enabled: true
+
+prometheus-adapter:
+  enabled: true
+
+# ============================================
+# ServiceMonitors
+# ============================================
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: true
+    kubeApiserverSlos: true
+    kubelet: true
+    kubeProxy: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeScheduler: true
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+kubeApiServer:
+  enabled: true
+
+kubelet:
+  enabled: true
+
+kubeControllerManager:
+  enabled: true
+
+coreDns:
+  enabled: true
+
+kubeEtcd:
+  enabled: true
+
+kubeScheduler:
+  enabled: true
+
+kubeProxy:
+  enabled: true

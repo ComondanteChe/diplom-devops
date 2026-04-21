@@ -1,0 +1,18 @@
+---
+- name: Prepare all nodes
+  hosts: k8s_cluster
+  become: yes
+  roles:
+    - common
+
+- name: Setup Kubernetes master
+  hosts: master
+  become: yes
+  roles:
+    - k8s_master
+
+- name: Setup Kubernetes worker
+  hosts: worker
+  become: yes
+  roles:
+    - k8s_worker

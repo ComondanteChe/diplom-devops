@@ -1,0 +1,11 @@
+controller:
+  service:
+    type: NodePort
+    nodePorts:
+      http: 32080
+      https: 32443
+  externalTrafficPolicy: Cluster
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: true

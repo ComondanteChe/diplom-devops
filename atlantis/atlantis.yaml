@@ -1,0 +1,134 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: atlantis
+  namespace: atlantis
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atlantis-config
+  namespace: atlantis
+data:
+  repos.yaml: |
+    repos:
+    - id: github.com/ComondanteChe/diplom-devops
+      allowed_overrides: [workflow]
+      allow_custom_workflows: true
+      apply_requirements: [approved]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: atlantis
+  namespace: atlantis
+spec:
+  serviceName: atlantis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atlantis
+  template:
+    metadata:
+      labels:
+        app: atlantis
+    spec:
+      serviceAccountName: atlantis
+      containers:
+      - name: atlantis
+        image: ghcr.io/runatlantis/atlantis:v0.31.0
+        args:
+        - server
+        - --atlantis-url=http://111.88.240.142.nip.io:32080/atlantis
+        - --gh-user=ComondanteChe
+        - --gh-token=$(GITHUB_TOKEN)
+        - --gh-webhook-secret=$(GITHUB_WEBHOOK_SECRET)
+        - --repo-allowlist=github.com/ComondanteChe/diplom-devops
+        - --repo-config=/etc/atlantis/repos.yaml
+        - --write-git-creds
+        - --port=4141
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: github_token
+        - name: GITHUB_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: github_webhook_secret
+        - name: TF_VAR_yc_token
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: yc_token
+        - name: ATLANTIS_PORT
+          value: "4141"
+        ports:
+        - containerPort: 4141
+          name: atlantis
+        volumeMounts:
+        - name: atlantis-data
+          mountPath: /atlantis
+        - name: atlantis-config
+          mountPath: /etc/atlantis
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 4141
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: atlantis-config
+        configMap:
+          name: atlantis-config
+  volumeClaimTemplates:
+  - metadata:
+      name: atlantis-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atlantis
+  namespace: atlantis
+spec:
+  selector:
+    app: atlantis
+  ports:
+  - port: 80
+    targetPort: 4141
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: atlantis
+  namespace: atlantis
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "111.88.240.142.nip.io"
+    http:
+      paths:
+      - path: /atlantis
+        pathType: Prefix
+        backend:
+          service:
+            name: atlantis
+            port:
+              number: 80

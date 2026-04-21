@@ -1,0 +1,12 @@
+---
+- name: Copy join command from local
+  copy:
+    src: /tmp/join-command.sh
+    dest: /tmp/join-command.sh
+    mode: '0755'
+
+- name: Join worker to cluster
+  become: yes
+  shell: sh /tmp/join-command.sh
+  args:
+    creates: /etc/kubernetes/kubelet.conf

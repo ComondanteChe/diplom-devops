@@ -1,0 +1,8 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: main
+  namespace: monitoring
+spec:
+  externalUrl: "http://111.88.240.142.nip.io:32080/alertmanager"
+  routePrefix: "/alertmanager"
