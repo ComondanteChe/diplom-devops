@@ -50,7 +50,7 @@ jobs:
             --username iam \
             --password-stdin
         env:
-          YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
+          YC_OAUTH_TOKEN: ${{ secrets.CI_CD_DIPLOM }}
 
       - name: Build Docker image
         run: |
@@ -97,7 +97,7 @@ jobs:
             --docker-password="${IAM_TOKEN}" \
             --dry-run=client -o yaml | kubectl apply -f -
         env:
-          YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
+          YC_OAUTH_TOKEN: ${{ secrets.CI_CD_DIPLOM }}
 
       - name: Deploy new image
         run: |
