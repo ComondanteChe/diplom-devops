@@ -1,5 +1,3 @@
-# Production overrides
-# Используется в CI/CD: helm upgrade --install ... -f values.prod.yaml
 replicaCount: 2
 
 resources:
