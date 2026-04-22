@@ -187,7 +187,7 @@ git push origin v1.0.5
 
 # ── Удалить тег ──────────────────────────────────────────
 git tag -d v1.0.5
-git push origin :refs/tags/v1.0.5
+git push origin --delete v1.0.5
 
 # ── Работа с Yandex Container Registry ───────────────────
 # Получить IAM токен
