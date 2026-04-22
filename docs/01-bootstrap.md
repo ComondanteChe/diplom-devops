@@ -4,7 +4,7 @@
 
 ## Что создаётся
 
-- **S3 бакет** (`evgeny-diplom-dvops`) — хранение Terraform state
+- **S3 бакет**  — хранение Terraform state
 - **KMS ключ** — шифрование содержимого бакета
 - **Static access key** — для доступа к S3 из Terraform backend
 - **Container Registry** — хранение Docker образов приложения
