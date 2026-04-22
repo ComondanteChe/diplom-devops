@@ -1,6 +1,4 @@
-# diplom-devops
-
-Дипломный проект: production-ready инфраструктура на Yandex Cloud с Kubernetes, мониторингом и GitOps.
+Данный проект позволяет развернуть production-ready инфраструктура на Yandex Cloud с Kubernetes, мониторингом и GitOps.
 
 ## Архитектура
 
@@ -26,7 +24,7 @@
               │  ┌──────────────────┐  │
               │  │  VPC Network     │  │
               │  │                  │  │
-              │  │  master-1 ●──────┼──┼── Static IP (111.88.240.142)
+              │  │  master-1 ●──────┼──┼── Static IP
               │  │  worker-1 ○      │  │   Preemptible VM
               │  │  worker-2 ○      │  │   Preemptible VM
               │  └──────────────────┘  │
@@ -58,7 +56,7 @@
 | IaC | Terraform v1.14.8 |
 | Состояние Terraform | Yandex Object Storage (S3) + KMS шифрование |
 | Образы | Yandex Container Registry |
-| ВМ | Ubuntu 22.04 LTS, прерываемые |
+| ВМ | Ubuntu 22.04 LTS |
 | Kubernetes | kubeadm v1.28.0 |
 | CNI | Calico v3.25 |
 | Ingress | ingress-nginx (NodePort) |
@@ -121,7 +119,6 @@ IP мастера: `terraform output ingress_nip_io` из директории `
 
 > Подробнее — в [docs/FEATURES.md](docs/FEATURES.md)
 
-- **Прерываемые ВМ** перезапускаются раз в сутки. IP воркеров меняется, IP мастера — статический.
 - **После пересоздания кластера** нужно обновить секрет `KUBE_CONFIG` в GitHub.
 - **IPIP протокол** должен быть разрешён в Security Group для Calico (правило `ANY` для `self_security_group`).
 - **Terraform провайдеры** устанавливаются через зеркало `terraform-mirror.yandexcloud.net`.
@@ -152,3 +149,5 @@ IP мастера: `terraform output ingress_nip_io` из директории `
 - [Мониторинг](docs/03-monitoring.md)
 - [Приложение и CI/CD](docs/04-app.md)
 - [Atlantis: GitOps для Terraform](docs/05-atlantis.md)
+
+  Данная работа является выпускным дипломным проектом
