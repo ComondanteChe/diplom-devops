@@ -3,8 +3,9 @@
 # ──────────────────────────────────────────────
 
 variable "yc_token" {
-  default   = "TOKEN yandex cloud"
-  sensitive = true
+  description = "Yandex Cloud OAuth token"
+  type        = string
+  sensitive   = true
 }
 
 variable "cloud_id" {

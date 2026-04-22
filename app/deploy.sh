@@ -1,9 +1,18 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 REGISTRY="cr.yandex/crp9d347bcdius5nhmk8"
 IMAGE="$REGISTRY/nginx-app:v1"
 NAMESPACE="app"
+
+# Load cluster variables from root deploy.env
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/../deploy.env" ]]; then
+  source "${SCRIPT_DIR}/../deploy.env"
+fi
+
+export CLUSTER_HOST="${CLUSTER_HOST:-<MASTER_IP>.nip.io}"
+export INGRESS_HTTP_PORT="${INGRESS_HTTP_PORT:-32080}"
 
 # Создать namespace
 kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
@@ -16,8 +25,8 @@ kubectl create secret docker-registry yc-registry \
   --docker-password=$(yc iam create-token) \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# Деплой
-kubectl apply -f deployment.yaml
+# Деплой с подстановкой переменных
+envsubst < "${SCRIPT_DIR}/deployment.yaml" | kubectl apply -f -
 
 echo ""
-echo "App will be available at: http://111.88.240.142.nip.io:32080/app"
+echo "App will be available at: http://${CLUSTER_HOST}:${INGRESS_HTTP_PORT}/app"

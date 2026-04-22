@@ -1,9 +1,27 @@
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: atlantis
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: atlantis
   namespace: atlantis
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atlantis-env
+  namespace: atlantis
+data:
+  cloud_id:           "b1g7i90u6v2v15jrqpdj"
+  folder_id:          "b1gnfat6d5tspst8frqn"
+  service_account_id: "ajekito9ie0cffqj42uu"
+  project_name:       "diplom-devops"
+  ssh_public_key_path: "/home/atlantis/.ssh/id_rsa.pub"
+  atlantis_port:      "4141"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -17,6 +35,23 @@ data:
       allowed_overrides: [workflow]
       allow_custom_workflows: true
       apply_requirements: [approved]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atlantis-terraformrc
+  namespace: atlantis
+data:
+  .terraformrc: |
+    provider_installation {
+      network_mirror {
+        url = "https://terraform-mirror.yandexcloud.net/"
+        include = ["registry.terraform.io/*/*"]
+      }
+      direct {
+        exclude = ["registry.terraform.io/*/*"]
+      }
+    }
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -35,12 +70,28 @@ spec:
         app: atlantis
     spec:
       serviceAccountName: atlantis
+      initContainers:
+      - name: install-terraform
+        image: alpine:3.19
+        command:
+        - sh
+        - -c
+        - |
+          wget -q "https://hashicorp-releases.yandexcloud.net/terraform/1.14.8/terraform_1.14.8_linux_amd64.zip" -O /tmp/terraform.zip && \
+          unzip /tmp/terraform.zip -d /tmp && \
+          mkdir -p /atlantis-data/bin && \
+          mv /tmp/terraform /atlantis-data/bin/terraform1.14.8 && \
+          chmod +x /atlantis-data/bin/terraform1.14.8 && \
+          echo "Terraform installed successfully"
+        volumeMounts:
+        - name: atlantis-data
+          mountPath: /atlantis-data
       containers:
       - name: atlantis
         image: ghcr.io/runatlantis/atlantis:v0.31.0
         args:
         - server
-        - --atlantis-url=http://111.88.240.142.nip.io:32080/atlantis
+        - --atlantis-url=http://${CLUSTER_HOST}:${INGRESS_HTTP_PORT}/atlantis
         - --gh-user=ComondanteChe
         - --gh-token=$(GITHUB_TOKEN)
         - --gh-webhook-secret=$(GITHUB_WEBHOOK_SECRET)
@@ -48,6 +99,8 @@ spec:
         - --repo-config=/etc/atlantis/repos.yaml
         - --write-git-creds
         - --port=4141
+        - --default-tf-version=v1.14.8
+        - --data-dir=/atlantis-data
         env:
         - name: GITHUB_TOKEN
           valueFrom:
@@ -65,15 +118,69 @@ spec:
               name: atlantis-secrets
               key: yc_token
         - name: ATLANTIS_PORT
-          value: "4141"
+          valueFrom:
+            configMapKeyRef:
+              name: atlantis-env
+              key: atlantis_port
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: aws_key
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: aws_secret_key
+        - name: TF_VAR_aws_key
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: aws_key
+        - name: TF_VAR_aws_secret_key
+          valueFrom:
+            secretKeyRef:
+              name: atlantis-secrets
+              key: aws_secret_key
+        - name: TF_VAR_cloud_id
+          valueFrom:
+            configMapKeyRef:
+              name: atlantis-env
+              key: cloud_id
+        - name: TF_VAR_folder_id
+          valueFrom:
+            configMapKeyRef:
+              name: atlantis-env
+              key: folder_id
+        - name: TF_VAR_service_account_id
+          valueFrom:
+            configMapKeyRef:
+              name: atlantis-env
+              key: service_account_id
+        - name: TF_VAR_project_name
+          valueFrom:
+            configMapKeyRef:
+              name: atlantis-env
+              key: project_name
+        - name: TF_VAR_ssh_public_key_path
+          valueFrom:
+            configMapKeyRef:
+              name: atlantis-env
+              key: ssh_public_key_path
         ports:
         - containerPort: 4141
           name: atlantis
         volumeMounts:
         - name: atlantis-data
-          mountPath: /atlantis
+          mountPath: /atlantis-data
         - name: atlantis-config
           mountPath: /etc/atlantis
+        - name: atlantis-terraformrc
+          mountPath: /home/atlantis/.terraformrc
+          subPath: .terraformrc
+        - name: atlantis-ssh
+          mountPath: /home/atlantis/.ssh/id_rsa.pub
+          subPath: ssh_public_key
         resources:
           requests:
             cpu: 100m
@@ -91,6 +198,15 @@ spec:
       - name: atlantis-config
         configMap:
           name: atlantis-config
+      - name: atlantis-terraformrc
+        configMap:
+          name: atlantis-terraformrc
+      - name: atlantis-ssh
+        secret:
+          secretName: atlantis-secrets
+          items:
+          - key: ssh_public_key
+            path: ssh_public_key
   volumeClaimTemplates:
   - metadata:
       name: atlantis-data
@@ -119,14 +235,15 @@ metadata:
   namespace: atlantis
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
-  - host: "111.88.240.142.nip.io"
+  - host: "${CLUSTER_HOST}"
     http:
       paths:
-      - path: /atlantis
-        pathType: Prefix
+      - path: /atlantis(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: atlantis

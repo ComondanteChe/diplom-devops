@@ -49,7 +49,7 @@ resource "yandex_compute_instance" "k8s_master" {
 
   labels = {
     role    = "master"
-    cluster = "var.project_name"
+    cluster = var.project_name
   }
 }
 
@@ -96,6 +96,6 @@ resource "yandex_compute_instance" "k8s_worker" {
 
   labels = {
     role    = "worker"
-    cluster = "var.project_name"
+    cluster = var.project_name
   }
 }

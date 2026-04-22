@@ -28,12 +28,6 @@ resource "yandex_vpc_security_group" "k8s_sg" {
   }
 
   ingress {
-    protocol = "TCP"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port = 32080
-  }
-
-  ingress {
     protocol       = "TCP"
     description    = "Kubernetes API"
     v4_cidr_blocks = ["0.0.0.0/0"]
@@ -42,15 +36,15 @@ resource "yandex_vpc_security_group" "k8s_sg" {
 
   ingress {
     protocol       = "TCP"
-    description    = "Kubernetes NodePort"
+    description    = "Kubernetes NodePort range (includes ingress-nginx :32080)"
     v4_cidr_blocks = ["0.0.0.0/0"]
     from_port      = "30000"
     to_port        = "32767"
   }
 
   ingress {
-    protocol          = "TCP"
-    description       = "Internal cluster communication"
+    protocol          = "ANY"
+    description       = "Internal cluster communication (includes IPIP for Calico)"
     predefined_target = "self_security_group"
   }
 
@@ -58,26 +52,5 @@ resource "yandex_vpc_security_group" "k8s_sg" {
     protocol       = "ICMP"
     description    = "ICMP ping"
     v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "UI Grafana"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 3000
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "UI Prometheus"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 9090
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "UI Alertmanager"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 9093
   }
 }

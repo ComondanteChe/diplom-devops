@@ -1,0 +1,12 @@
+# Copy this file to terraform.tfvars and fill in your values
+# cp terraform.tfvars.example terraform.tfvars
+
+# ── Yandex Cloud credentials ──────────────────────────────
+yc_token           = "y0_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+cloud_id           = "b1g000000000000000000"
+folder_id          = "b1g000000000000000000"
+service_account_id = "aje000000000000000000"
+
+# ── S3 bucket for Terraform state ─────────────────────────
+# Must be globally unique
+bucket_name = "terraform-state-my-project-unique-suffix"

@@ -24,5 +24,8 @@ id_ed25519.pub
 # Ansible inventory (generated)
 infrastructure/ansible/inventory/hosts.ini
 
+# Deploy config (contains cluster IP)
+deploy.env
+
 # OS
 .DS_Store

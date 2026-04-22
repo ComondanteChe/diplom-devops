@@ -1,0 +1,3 @@
+---
+k8s_version: "1.28"
+k8s_package_version: "1.28.0-1.1"

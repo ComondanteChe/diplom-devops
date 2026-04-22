@@ -41,6 +41,6 @@ locals {
   zone_to_subnet = {
     "ru-central1-a" = yandex_vpc_subnet.k8s_subnet_a.id
     "ru-central1-b" = yandex_vpc_subnet.k8s_subnet_b.id
-    "ru-central1-c" = yandex_vpc_subnet.k8s_subnet_d.id
+    "ru-central1-d" = yandex_vpc_subnet.k8s_subnet_d.id
   }
 }

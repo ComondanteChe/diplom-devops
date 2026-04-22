@@ -1,0 +1,38 @@
+# Copy this file to terraform.tfvars and fill in your values
+# cp terraform.tfvars.example terraform.tfvars
+
+# ── Yandex Cloud credentials ──────────────────────────────
+yc_token           = "y0_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+cloud_id           = "b1g000000000000000000"
+folder_id          = "b1g000000000000000000"
+service_account_id = "aje000000000000000000"
+
+# S3 backend credentials (static access key for the service account)
+aws_key        = "YCAJE000000000000000000"
+aws_secret_key = "YCNkP-000000000000000000000000000000000000"
+
+# ── Project ───────────────────────────────────────────────
+project_name = "diplom-devops"
+
+# ── SSH ───────────────────────────────────────────────────
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+ssh_user            = "ubuntu"
+
+# ── Master nodes ──────────────────────────────────────────
+master_count         = 1
+master_cpu           = 2
+master_memory        = 2
+master_core_fraction = 20
+master_disk_size     = 20
+master_disk_type     = "network-hdd"
+
+# ── Worker nodes ──────────────────────────────────────────
+worker_count         = 2
+worker_cpu           = 2
+worker_memory        = 2
+worker_core_fraction = 20
+worker_disk_size     = 20
+worker_disk_type     = "network-hdd"
+
+# ── Availability zones ────────────────────────────────────
+zones = ["ru-central1-a", "ru-central1-b", "ru-central1-d"]

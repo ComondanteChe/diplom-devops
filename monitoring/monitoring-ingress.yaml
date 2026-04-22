@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: "111.88.240.142.nip.io"
+  - host: "${CLUSTER_HOST}"
     http:
       paths:
       - path: /grafana

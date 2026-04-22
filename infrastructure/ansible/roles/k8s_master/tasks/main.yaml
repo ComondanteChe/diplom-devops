@@ -2,7 +2,7 @@
   become: yes
   shell: |
     kubeadm init \
-      --pod-network-cidr=10.244.0.0/16 \
+      --pod-network-cidr={{ pod_network_cidr }} \
       --apiserver-advertise-address={{ ansible_default_ipv4.address }} \
       --node-name={{ ansible_hostname }} \
       --apiserver-cert-extra-sans={{ hostvars[inventory_hostname]['ansible_host'] }}
@@ -12,36 +12,36 @@
 - name: Create .kube directory
   become: yes
   file:
-    path: /home/ubuntu/.kube
+    path: /home/{{ kube_user }}/.kube
     state: directory
-    owner: ubuntu
-    group: ubuntu
+    owner: "{{ kube_user }}"
+    group: "{{ kube_user }}"
     mode: '0755'
 
 - name: Copy admin.conf to user's kube config
   become: yes
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: /home/ubuntu/.kube/config
+    dest: /home/{{ kube_user }}/.kube/config
     remote_src: yes
-    owner: ubuntu
-    group: ubuntu
+    owner: "{{ kube_user }}"
+    group: "{{ kube_user }}"
     mode: '0600'
 
 - name: Update API Server address to external IP in kubeconfig
   replace:
-    path: /home/ubuntu/.kube/config
+    path: /home/{{ kube_user }}/.kube/config
     regexp: 'https://{{ ansible_default_ipv4.address }}:6443'
     replace: 'https://{{ hostvars[inventory_hostname]["ansible_host"] }}:6443'
   become: yes
 
 - name: Install Calico
   become: yes
-  become_user: ubuntu
+  become_user: "{{ kube_user }}"
   shell: |
-    kubectl apply -f https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml
+    kubectl apply -f {{ calico_url }}
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: /home/{{ kube_user }}/.kube/config
 
 - name: Generate join command
   become: yes

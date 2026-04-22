@@ -10,8 +10,8 @@ on:
       - 'v*.*.*'
 
 env:
-  REGISTRY: cr.yandex/crp9d347bcdius5nhmk8
-  IMAGE_NAME: nginx-app
+  REGISTRY: ${{ vars.REGISTRY }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
 
 jobs:
   build-and-push:

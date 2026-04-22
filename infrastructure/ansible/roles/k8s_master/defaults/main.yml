@@ -1,0 +1,5 @@
+---
+pod_network_cidr: "10.244.0.0/16"
+calico_version: "v3.25"
+calico_url: "https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml"
+kube_user: "ubuntu"

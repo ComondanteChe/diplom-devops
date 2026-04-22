@@ -13,7 +13,7 @@ terraform {
     }
     bucket = "evgeny-diplom-dvops"
     key    = "bootstrap/terraform.tfstate"
-    region = "us-east-1"
+    region = "ru-central1"
 
     skip_region_validation      = true
     skip_credentials_validation = true
