@@ -75,8 +75,14 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
 
       - name: Configure kubeconfig
         run: |
@@ -93,6 +99,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"yandexPassportOauthToken\": \"$YC_OAUTH_TOKEN\"}" \
             https://iam.api.cloud.yandex.net/iam/v1/tokens | jq -r '.iamToken')
+          kubectl create namespace app --dry-run=client -o yaml | kubectl apply --validate=false -f -
           kubectl create secret docker-registry yc-registry \
             --namespace=app \
             --docker-server=cr.yandex \
@@ -102,9 +109,12 @@ jobs:
         env:
           YC_OAUTH_TOKEN: ${{ secrets.CI_CD_DIPLOM }}
 
-      - name: Deploy new image
+      - name: Deploy via Helm
         run: |
-          kubectl set image deployment/nginx-app \
-            nginx-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} \
-            --namespace=app
-          kubectl rollout status deployment/nginx-app --namespace=app --timeout=120s
+          helm upgrade --install nginx-app ./helm/nginx-app \
+            --namespace=app \
+            --set image.registry=${{ env.REGISTRY }} \
+            --set image.tag=${{ github.ref_name }} \
+            --set ingress.host=${{ vars.CLUSTER_HOST }} \
+            --wait \
+            --timeout=120s

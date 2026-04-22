@@ -1,0 +1,43 @@
+replicaCount: 2
+
+image:
+  registry: cr.yandex/crp9d347bcdius5nhmk8
+  name: nginx-app
+  tag: "v1"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: yc-registry
+
+nameOverride: ""
+fullnameOverride: "nginx-app"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: "111.88.240.142.nip.io"
+  path: /app
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+probes:
+  path: /health
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  liveness:
+    initialDelaySeconds: 10
+    periodSeconds: 30
