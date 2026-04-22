@@ -1,6 +1,6 @@
 resource "yandex_vpc_network" "k8s_network" {
   name        = "${var.project_name}-network"
-  description = "Network for Kubernetes cluster"
+  description = "Main VPC network for Kubernetes cluster"
 }
 
 resource "yandex_vpc_subnet" "k8s_subnet_a" {
